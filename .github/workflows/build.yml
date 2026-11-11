@@ -1,0 +1,31 @@
+name: Build PSP
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: pspdev/pspdev:latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies (OSLib, IntraFont)
+        run: |
+          cd /tmp
+          git clone https://github.com/dogo/oslibmodv2.git
+          cd oslibmodv2 && make && make install
+          cd /tmp
+          git clone https://github.com/pspdev/intrafont.git
+          cd intrafont && make && make install
+
+      - name: Compile Project
+        run: make
+
+      - name: Upload EBOOT
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexusOS-EBOOT
+          path: EBOOT.PBP
